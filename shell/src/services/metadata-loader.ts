@@ -33,28 +33,19 @@ export class MetadataLoaderService {
     }
   }
 
-  async loadRemoteConfigs(configEndpoint: string): Promise<void> {
-    try {
-      const response = await fetch(configEndpoint);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const configs = await response.json();
+  async loadRemoteConfigs(endpoint: string): Promise<void> {
+    const response = await fetch(endpoint);
+    const configs: Array<{ moduleId: string; remote: RemoteContainerConfig }> = await response.json();
 
-      // Update existing features with remote configurations
-      configs.forEach((config: { moduleId: string; remote: RemoteConfig }) => {
-        const feature = this.features.get(config.moduleId);
-        if (feature) {
-          feature.remote = config.remote;
-          this.features.set(config.moduleId, feature);
-          FeatureRegistry.register(feature);
-        }
-      });
-    } catch (error) {
-      console.error("Failed to load remote configurations:", error);
-      throw error;
-    }
+    configs.forEach(({ moduleId, remote }) => {
+      const feature = this.features.get(moduleId);
+      if (feature) {
+        feature.remote = remote;
+        FeatureRegistry.register(feature);
+      }
+    });
   }
+
 
   configureRouter(router: any): void {
     const routes = FeatureMetadataScanner.generateRouterConfig();

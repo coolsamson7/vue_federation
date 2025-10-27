@@ -1,3 +1,5 @@
+import { loadRemoteContainer } from '../remote-loader';
+
 export interface RemoteConfig {
   url: string;
   scope: string;
@@ -42,7 +44,7 @@ export function FeatureModule(metadata: FeatureMetadata) {
 export class FeatureRegistry {
   private static features: Map<string, FeatureMetadata> = new Map();
 
-  static register(metadata: FeatureMetadata): void {
+  static register(metadata: FeatureMetadata) {
     this.features.set(metadata.id, metadata);
   }
 
@@ -50,34 +52,23 @@ export class FeatureRegistry {
     return this.features.get(id);
   }
 
-  static getAll(): FeatureMetadata[] {
-    return Array.from(this.features.values());
-  }
+    static getAll(): FeatureMetadata[] {
+      return Array.from(this.features.values());
+    }
 
   static async loadRemoteComponent(componentName: string): Promise<any> {
     const [moduleId, component] = componentName.split("/");
-    const feature = Array.from(this.features.values()).find(
-      (f) => f.id === moduleId
-    );
 
+    const feature = this.get(moduleId);
     if (!feature?.remote) {
       throw new Error(`No remote configuration found for module ${moduleId}`);
     }
 
-    const { url } = feature.remote;
-
-    try {
-      // @ts-ignore - Federation types
-      const container = await import(/* @vite-ignore */ url);
-      // @ts-ignore - Federation types
-      //TODO ??? await container.init?.(window.__federation_shared__);
-      const factory = await container.get(`./${component}`);
-      return factory();
-    } catch (error) {
-      console.error(`Failed to load remote component ${componentName}:`, error);
-      throw error;
-    }
+    const container = await loadRemoteContainer(feature.remote);
+    const factory = await container.get(`./${component}`);
+    return factory(); // Vue component ready to render
   }
+
 
   static exportToJSON(): string {
     return JSON.stringify(
@@ -103,6 +94,7 @@ export class FeatureMetadataScanner {
     }
     return null;
   }
+
 
   static scanAll(): FeatureMetadata[] {
     return FeatureRegistry.getAll();
@@ -150,35 +142,6 @@ export class FeatureMetadataScanner {
               `Invalid component configuration for route ${route.path}`
             );
           };
-
-          //});
-
-          /* fallback: local component inside the host app (assume path like 'components/SomeComp')
-            try {
-              const compPathFragment = `${route.component}.vue`;
-              const matchKey = Object.keys(localComponentMap).find((k) =>
-                k.includes(compPathFragment)
-              );
-              if (matchKey) {
-                return localComponentMap[matchKey]().catch((err: any) => {
-                  console.error(
-                    `Failed to import local component ${matchKey}:`,
-                    err
-                  );
-                  return { template: "<div>Component not found</div>" };
-                });
-              }
-              console.error(
-                `Local component not found in glob map: ../../${route.component}.vue`
-              );
-            } catch (err: any) {
-              console.error(
-                `Error resolving local component ../../${route.component}.vue:`,
-                err
-              );
-            }
-            return { template: "<div>Component not found</div>" };
-          };*/
 
           routes.push({
             path: route.path,

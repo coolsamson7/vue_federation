@@ -9,10 +9,7 @@ export default defineConfig({
     vue(),
     federation({
       name: "shell",
-      remotes: {
-        productModule: "http://localhost:5003/assets/remoteEntry.js",
-        userModule: "http://localhost:5002/assets/remoteEntry.js",
-      },
+
       shared: {
        vue: {
            singleton: true,
