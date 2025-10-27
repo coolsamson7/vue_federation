@@ -1,0 +1,33 @@
+{
+  "features": [
+    {
+      "id": "userModule",
+      "name": "User Management",
+      "version": "1.0.0",
+      "routes": [
+        {
+          "path": "/users",
+          "name": "UserList",
+          "component": "remote:userModule/UserList"
+        }
+      ]
+    },
+    {
+      "id": "productModule",
+      "name": "Product Management",
+      "version": "1.0.0",
+      "routes": [
+        {
+          "path": "/products",
+          "name": "ProductList",
+          "component": "remote:productModule/ProductList"
+        },
+        {
+          "path": "/products/:id",
+          "name": "ProductDetail",
+          "component": "remote:productModule/ProductDetail"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "name": "product-module",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "clean": "rm -rf dist node_modules/.vite",
+    "metadata": "tsx --tsconfig tsconfig.build.json build-metadata.ts",
+    "prebuild": "npm run metadata",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "pinia": "^3.0.3",
+    "reflect-metadata": "^0.2.2",
+    "vue": "^3.5.22",
+    "vue-router": "^4.6.3"
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-decorators": "^7.28.0",
+    "@babel/plugin-syntax-typescript": "^7.27.1",
+    "@babel/plugin-transform-typescript": "^7.28.5",
+    "@originjs/vite-plugin-federation": "^1.4.1",
+    "@types/node": "^24.9.1",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "glob": "^11.0.3",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.12"
+  }
+}

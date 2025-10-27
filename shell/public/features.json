@@ -1,0 +1,145 @@
+{
+  "projects": [
+    {
+      "projectName": "product-module",
+      "features": [
+        {
+          "id": "product-module",
+          "name": "Product Management",
+          "version": "1.0.0",
+          "icon": "📦",
+          "description": "Product catalog and management system",
+          "routes": [
+            {
+              "path": "/products",
+              "name": "ProductList",
+              "component": "remote:productModule/ProductList",
+              "meta": {
+                "requiresAuth": true
+              }
+            },
+            {
+              "path": "/products/:id",
+              "name": "ProductDetail",
+              "component": "remote:productModule/ProductDetail",
+              "meta": {
+                "requiresAuth": true
+              }
+            }
+          ],
+          "permissions": [
+            "product:read",
+            "product:write",
+            "product:delete"
+          ],
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "projectName": "user-module",
+      "features": [
+        {
+          "id": "user-module",
+          "name": "User Management",
+          "version": "1.0.0",
+          "icon": "👤",
+          "description": "User profiles and authentication system",
+          "routes": [
+            {
+              "path": "/users",
+              "name": "UserList",
+              "component": "remote:userModule/UserList",
+              "meta": {
+                "requiresAuth": true,
+                "requiresAdmin": true
+              }
+            },
+            {
+              "path": "/profile",
+              "name": "UserProfile",
+              "component": "remote:userModule/UserProfile",
+              "meta": {
+                "requiresAuth": true
+              }
+            }
+          ],
+          "permissions": [
+            "user:read",
+            "user:write",
+            "user:delete",
+            "user:admin"
+          ],
+          "dependencies": []
+        }
+      ]
+    }
+  ],
+  "allFeatures": [
+    {
+      "id": "product-module",
+      "name": "Product Management",
+      "version": "1.0.0",
+      "icon": "📦",
+      "description": "Product catalog and management system",
+      "routes": [
+        {
+          "path": "/products",
+          "name": "ProductList",
+          "component": "remote:productModule/ProductList",
+          "meta": {
+            "requiresAuth": true
+          }
+        },
+        {
+          "path": "/products/:id",
+          "name": "ProductDetail",
+          "component": "remote:productModule/ProductDetail",
+          "meta": {
+            "requiresAuth": true
+          }
+        }
+      ],
+      "permissions": [
+        "product:read",
+        "product:write",
+        "product:delete"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "user-module",
+      "name": "User Management",
+      "version": "1.0.0",
+      "icon": "👤",
+      "description": "User profiles and authentication system",
+      "routes": [
+        {
+          "path": "/users",
+          "name": "UserList",
+          "component": "remote:userModule/UserList",
+          "meta": {
+            "requiresAuth": true,
+            "requiresAdmin": true
+          }
+        },
+        {
+          "path": "/profile",
+          "name": "UserProfile",
+          "component": "remote:userModule/UserProfile",
+          "meta": {
+            "requiresAuth": true
+          }
+        }
+      ],
+      "permissions": [
+        "user:read",
+        "user:write",
+        "user:delete",
+        "user:admin"
+      ],
+      "dependencies": []
+    }
+  ],
+  "timestamp": "2025-10-27T11:28:10.441Z"
+}

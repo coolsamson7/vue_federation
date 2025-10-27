@@ -1,0 +1,39 @@
+{
+  "projectName": "product-module",
+  "projectPath": "/Users/andreasernst/Documents/projects/vue/product-module",
+  "features": [
+    {
+      "id": "product-module",
+      "name": "Product Management",
+      "version": "1.0.0",
+      "icon": "📦",
+      "description": "Product catalog and management system",
+      "routes": [
+        {
+          "path": "/products",
+          "name": "ProductList",
+          "component": "remote:productModule/ProductList",
+          "meta": {
+            "requiresAuth": true
+          }
+        },
+        {
+          "path": "/products/:id",
+          "name": "ProductDetail",
+          "component": "remote:productModule/ProductDetail",
+          "meta": {
+            "requiresAuth": true
+          }
+        }
+      ],
+      "permissions": [
+        "product:read",
+        "product:write",
+        "product:delete"
+      ],
+      "dependencies": []
+    }
+  ],
+  "timestamp": "2025-10-27T11:16:15.141Z",
+  "version": "1.0.0"
+}
