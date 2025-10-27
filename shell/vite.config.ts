@@ -14,21 +14,18 @@ export default defineConfig({
         userModule: "http://localhost:5002/assets/remoteEntry.js",
       },
       shared: {
-        vue: {
-          import: false,
-          requiredVersion: "^3.5.22",
-          manuallyPackagePathSetting: true,
-        },
-        "vue-router": {
-          import: false,
-          requiredVersion: "^4.6.3",
-          manuallyPackagePathSetting: true,
-        },
-        pinia: {
-          import: false,
-          requiredVersion: "^3.0.3",
-          manuallyPackagePathSetting: true,
-        },
+       vue: {
+           singleton: true,
+           requiredVersion: "^3.5.22",
+         },
+         "vue-router": {
+           singleton: true,
+           requiredVersion: "^4.6.3",
+         },
+         pinia: {
+           singleton: true,
+           requiredVersion: "^3.0.3",
+         },
       } as any,
     }),
   ],

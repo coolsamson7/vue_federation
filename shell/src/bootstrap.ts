@@ -39,26 +39,3 @@ export async function bootstrapApplication(): Promise<void> {
     throw error;
   }
 }
-
-/*class ShellMetadataLoader {
-  async loadFromStaticFile(path: string): Promise<void> {
-    try {
-      const response = await fetch(path);
-      const data: RemoteMetadata = await response.json();
-
-      // Registriere Features aus allen Modulen
-      data.allFeatures.forEach((feature) => {
-        FeatureRegistry.register(feature);
-      });
-
-      console.log(`📦 Loaded features from ${data.projects.length} projects`);
-
-      // Lade die Remote-Module
-      const modules = ["productModule", "userModule"];
-      await Promise.all(modules.map(loadRemoteModule));
-    } catch (error) {
-      console.error("Error loading metadata:", error);
-      throw error;
-    }
-  }
-}*/

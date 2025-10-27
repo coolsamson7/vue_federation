@@ -1,6 +1,6 @@
 {
   "projectName": "user-module",
-  "projectPath": "/Users/andreasernst/Documents/projects/vue/user-module",
+  "projectPath": "/Users/andreasernst/Documents/projects/vue_federation/user-module",
   "features": [
     {
       "id": "user-module",
@@ -36,6 +36,6 @@
       "dependencies": []
     }
   ],
-  "timestamp": "2025-10-27T11:16:30.934Z",
+  "timestamp": "2025-10-27T14:21:45.812Z",
   "version": "1.0.0"
 }

@@ -17,20 +17,17 @@ export default defineConfig({
       },
       shared: {
         vue: {
-          import: false,
-          requiredVersion: "^3.5.22",
-          manuallyPackagePathSetting: true,
-        },
-        "vue-router": {
-          import: false,
-          requiredVersion: "^4.6.3",
-          manuallyPackagePathSetting: true,
-        },
-        pinia: {
-          import: false,
-          requiredVersion: "^3.0.3",
-          manuallyPackagePathSetting: true,
-        },
+            requiredVersion: "^3.5.22",
+            singleton: true,
+          },
+          "vue-router": {
+            requiredVersion: "^4.6.3",
+            singleton: true,
+          },
+          pinia: {
+            requiredVersion: "^3.0.3",
+            singleton: true,
+          },
       } as any,
     }),
   ],

@@ -1,6 +1,6 @@
 {
   "projectName": "product-module",
-  "projectPath": "/Users/andreasernst/Documents/projects/vue/product-module",
+  "projectPath": "/Users/andreasernst/Documents/projects/vue_federation/product-module",
   "features": [
     {
       "id": "product-module",
@@ -34,6 +34,6 @@
       "dependencies": []
     }
   ],
-  "timestamp": "2025-10-27T11:16:15.141Z",
+  "timestamp": "2025-10-27T14:21:54.855Z",
   "version": "1.0.0"
 }
