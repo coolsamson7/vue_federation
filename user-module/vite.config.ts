@@ -6,10 +6,11 @@ import federation from "@originjs/vite-plugin-federation";
 
 export default defineConfig({
   plugins: [
-    vue(),
+       vue(),
     federation({
       name: "userModule",
       filename: "remoteEntry.js",
+
       exposes: {
         "./UserList": "./src/components/UserList.vue",
         "./UserProfile": "./src/components/UserProfile.vue",
@@ -41,6 +42,10 @@ export default defineConfig({
   },
   resolve: {
     alias: [
+      {
+       find: "@portal",
+               replacement: path.resolve(__dirname, "../portal/src"),
+      },
       {
         // exact `import 'vue'` should use the runtime compiler build
         find: /^vue$/,

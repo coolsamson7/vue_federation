@@ -1,4 +1,4 @@
-import { loadRemoteContainer } from '../remote-loader';
+import { loadRemoteContainer } from './remote-loader';
 
 export interface RemoteConfig {
   url: string;

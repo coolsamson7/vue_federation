@@ -1,5 +1,5 @@
 import { FeatureMetadataScanner } from "./feature-parser";
-import { FeatureRegistry } from "./src/decorators/feature-decorator";
+import { FeatureRegistry } from "portal";
 import * as path from "path";
 import * as fs from "fs";
 import { register } from "ts-node";

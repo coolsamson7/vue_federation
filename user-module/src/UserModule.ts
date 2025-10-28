@@ -1,4 +1,4 @@
-import { FeatureModule } from "./decorators/feature-decorator";
+import { FeatureModule } from "@portal/feature-decorator";
 
 @FeatureModule({
   id: "user-module",

@@ -6,6 +6,12 @@ export interface RemoteContainerConfig {
 
 const containers: Record<string, any> = {};
 
+declare global {
+  interface Window {
+    __federation_shared__?: Record<string, unknown>;
+  }
+}
+
 /**
  * Dynamically load a remote container via module federation
  */

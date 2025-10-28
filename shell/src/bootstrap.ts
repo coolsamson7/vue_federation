@@ -1,8 +1,8 @@
-import { MetadataLoaderService } from "./services/metadata-loader";
 import {
   FeatureRegistry,
   FeatureMetadata,
-} from "./decorators/feature-decorator";
+  MetadataLoaderService
+} from "portal";
 import { Router } from "vue-router";
 
 interface RemoteMetadata {

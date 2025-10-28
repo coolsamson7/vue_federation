@@ -19,7 +19,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { FeatureRegistry } from '../decorators/feature-decorator';
+import { FeatureRegistry } from 'portal';
 
 const features = ref<any[]>([]);
 

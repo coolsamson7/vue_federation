@@ -38,41 +38,7 @@
     },
     {
       "projectName": "user-module",
-      "features": [
-        {
-          "id": "user-module",
-          "name": "User Management",
-          "version": "1.0.0",
-          "icon": "👤",
-          "description": "User profiles and authentication system",
-          "routes": [
-            {
-              "path": "/users",
-              "name": "UserList",
-              "component": "remote:userModule/UserList",
-              "meta": {
-                "requiresAuth": true,
-                "requiresAdmin": true
-              }
-            },
-            {
-              "path": "/profile",
-              "name": "UserProfile",
-              "component": "remote:userModule/UserProfile",
-              "meta": {
-                "requiresAuth": true
-              }
-            }
-          ],
-          "permissions": [
-            "user:read",
-            "user:write",
-            "user:delete",
-            "user:admin"
-          ],
-          "dependencies": []
-        }
-      ]
+      "features": []
     }
   ],
   "allFeatures": [
@@ -106,40 +72,7 @@
         "product:delete"
       ],
       "dependencies": []
-    },
-    {
-      "id": "user-module",
-      "name": "User Management",
-      "version": "1.0.0",
-      "icon": "👤",
-      "description": "User profiles and authentication system",
-      "routes": [
-        {
-          "path": "/users",
-          "name": "UserList",
-          "component": "remote:userModule/UserList",
-          "meta": {
-            "requiresAuth": true,
-            "requiresAdmin": true
-          }
-        },
-        {
-          "path": "/profile",
-          "name": "UserProfile",
-          "component": "remote:userModule/UserProfile",
-          "meta": {
-            "requiresAuth": true
-          }
-        }
-      ],
-      "permissions": [
-        "user:read",
-        "user:write",
-        "user:delete",
-        "user:admin"
-      ],
-      "dependencies": []
     }
   ],
-  "timestamp": "2025-10-27T15:23:30.146Z"
+  "timestamp": "2025-10-28T07:26:52.666Z"
 }

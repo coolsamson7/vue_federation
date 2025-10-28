@@ -1,5 +1,6 @@
 import "reflect-metadata";
-import { FeatureModule, FeatureMetadata } from "./decorators/feature-decorator";
+
+import { FeatureModule, FeatureMetadata } from "portal";
 
 @FeatureModule({
   id: "product-module",

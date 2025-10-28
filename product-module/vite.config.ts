@@ -41,6 +41,10 @@ export default defineConfig({
   },
   resolve: {
     alias: [
+           {
+               find: "@portal",
+                             replacement: path.resolve(__dirname, "../portal/src"),
+             },
       {
         // exact `import 'vue'` should use the runtime compiler build
         find: /^vue$/,

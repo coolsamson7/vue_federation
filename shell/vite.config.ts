@@ -9,7 +9,7 @@ export default defineConfig({
     vue(),
     federation({
       name: "shell",
-
+      remotes: { },
       shared: {
        vue: {
            singleton: true,
@@ -23,6 +23,7 @@ export default defineConfig({
            singleton: true,
            requiredVersion: "^3.0.3",
          },
+        portal: { singleton: true }
       } as any,
     }),
   ],
@@ -33,6 +34,10 @@ export default defineConfig({
   },
   resolve: {
     alias: [
+        {
+      find: "@portal",
+                     replacement: path.resolve(__dirname, "../portal/src"),
+     },
       {
         // exact `import 'vue'` should use the runtime compiler build
         find: /^vue$/,

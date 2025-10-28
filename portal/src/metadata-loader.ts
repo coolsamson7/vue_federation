@@ -1,9 +1,10 @@
 import {
   FeatureRegistry,
   FeatureMetadata,
-  FeatureMetadataScanner,
-  RemoteConfig,
-} from "../decorators/feature-decorator";
+  FeatureMetadataScanner
+} from "./feature-decorator";
+
+import { RemoteContainerConfig } from "./remote-loader";
 
 export class MetadataLoaderService {
   private features: Map<string, FeatureMetadata> = new Map();

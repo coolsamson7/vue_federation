@@ -36,8 +36,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
-import { FeatureMetadataScanner } from "./decorators/feature-decorator";
-import { FeatureRegistry } from "./decorators/feature-decorator";
+import { FeatureRegistry, FeatureMetadataScanner } from "portal";
 
 const menuItems = ref<any[]>([]);
 const metadata = ref("");

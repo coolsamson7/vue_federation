@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
-import { FeatureMetadataScanner } from '../decorators/feature-decorator';
+import { FeatureMetadataScanner } from 'portal';
 import Home from '../views/Home.vue';
 
 const routes: RouteRecordRaw[] = [
