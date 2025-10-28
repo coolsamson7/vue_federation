@@ -1,18 +1,8 @@
 import {
   FeatureRegistry,
-  FeatureMetadata,
   MetadataLoaderService,
 } from "portal";
-import { Router } from "vue-router";
 
-interface RemoteMetadata {
-  projects: Array<{
-    projectName: string;
-    features: FeatureMetadata[];
-  }>;
-  allFeatures: FeatureMetadata[];
-  timestamp: string;
-}
 
 export async function bootstrapApplication(): Promise<void> {
   const metadataLoader = new MetadataLoaderService();

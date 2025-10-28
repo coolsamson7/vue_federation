@@ -16,6 +16,7 @@ declare global {
  * Dynamically load a remote container via module federation
  */
 export async function loadRemoteContainer(config: RemoteContainerConfig): Promise<any> {
+    console.log("loadRemoteContainer", config);
   const { url, scope } = config;
 
   // Return cached container if already loaded
