@@ -1,8 +1,4 @@
-import {
-  FeatureRegistry,
-  FeatureMetadata,
-  FeatureMetadataScanner
-} from "./feature-decorator";
+import { FeatureRegistry, FeatureMetadata } from "./feature-registry";
 
 import { RemoteContainerConfig } from "./remote-loader";
 
@@ -36,7 +32,8 @@ export class MetadataLoaderService {
 
   async loadRemoteConfigs(endpoint: string): Promise<void> {
     const response = await fetch(endpoint);
-    const configs: Array<{ moduleId: string; remote: RemoteContainerConfig }> = await response.json();
+    const configs: Array<{ moduleId: string; remote: RemoteContainerConfig }> =
+      await response.json();
 
     configs.forEach(({ moduleId, remote }) => {
       const feature = this.features.get(moduleId);
@@ -47,13 +44,16 @@ export class MetadataLoaderService {
     });
   }
 
-
   configureRouter(router: any): void {
-    const routes = FeatureMetadataScanner.generateRouterConfig();
+    const features = FeatureRegistry.getAll();
+
+    const routes = FeatureRegistry.generateRouterConfig();
 
     routes.forEach((route) => {
       router.addRoute(route);
     });
+
+    console.log(`✅ ${routes.length} routes configured from features`);
   }
 
   async loadRemoteModule(moduleUrl: string, moduleName: string): Promise<any> {

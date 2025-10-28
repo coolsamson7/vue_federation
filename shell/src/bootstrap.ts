@@ -1,7 +1,7 @@
 import {
   FeatureRegistry,
   FeatureMetadata,
-  MetadataLoaderService
+  MetadataLoaderService,
 } from "portal";
 import { Router } from "vue-router";
 
@@ -30,7 +30,9 @@ export async function bootstrapApplication(): Promise<void> {
     // Konfiguriere Router
     const router = (window as any).__router__;
     if (router) {
-      metadataLoader.configureRouter(router);
+      FeatureRegistry.generateRouterConfig().forEach((route) => {
+        router.addRoute(route);
+      });
     }
 
     console.log("🚀 Application bootstrapped successfully");

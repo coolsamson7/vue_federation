@@ -1,0 +1,20 @@
+{
+  "name": "metadata-tools",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "scan": "tsx src/build-metadata.ts",
+    "test": "echo \"No tests yet\""
+  },
+  "dependencies": {
+    "portal": "file:../../portal",
+    "glob": "^11.0.3",
+    "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.9.1",
+    "tsx": "^4.20.6"
+  }
+}

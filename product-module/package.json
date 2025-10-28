@@ -4,8 +4,8 @@
   "type": "module",
   "scripts": {
     "clean": "rm -rf dist node_modules/.vite",
-    "metadata": "tsx --tsconfig tsconfig.build.json build-metadata.ts",
-    "prebuild": "npm run metadata",
+    "prebuild": "npm run scan:metadata",
+    "scan:metadata": "tsx ../tools/metadata/src/build-metadata.ts ./ dist/metadata.json",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"

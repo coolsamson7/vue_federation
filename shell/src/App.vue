@@ -36,7 +36,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
-import { FeatureRegistry, FeatureMetadataScanner } from "portal";
+import { FeatureRegistry } from "portal";
 
 const menuItems = ref<any[]>([]);
 const metadata = ref("");
@@ -45,14 +45,23 @@ const showMetadata = ref(false);
 const featureCount = computed(() => FeatureRegistry.getAll().length); // ADDED
 
 const refreshFeatures = () => {
-  // ADDED entire function
-  menuItems.value = FeatureMetadataScanner.generateMenuConfig();
   console.log("🔄 Refreshed features:", menuItems.value);
+
+  const features = FeatureRegistry.getAll();
+
+  menuItems.value = features.map((feature) => ({
+    id: feature.id,
+    name: feature.name,
+    icon: feature.icon,
+    description: feature.description,
+    routes: feature.routes?.map((r) => r.path) || [],
+  }));
 };
 
 onMounted(() => {
   // Initial load
-  refreshFeatures(); // CHANGED: was direct assignment
+  refreshFeatures();
+  metadata.value = FeatureRegistry.exportToJSON();
 
   // ADDED: Also refresh after a delay to catch late-loading modules
   setTimeout(refreshFeatures, 500);
@@ -60,7 +69,7 @@ onMounted(() => {
 });
 
 const exportMetadata = () => {
-  metadata.value = FeatureMetadataScanner.exportJSON();
+  metadata.value = FeatureRegistry.exportToJSON();
   console.log("Exported Metadata:", metadata.value);
 };
 

@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "outDir": "dist",
+     "baseUrl": ".",
+     "paths": {
+      "portal": ["../../portal/src/index.ts"],
+      "portal/*": ["../../portal/src/*"]
+     }
+  },
+  "include": ["src/**/*.ts"]
+}

@@ -1,31 +1,9 @@
 import * as fs from "fs";
 import * as path from "path";
 import { glob } from "glob";
-import {
-  FeatureRegistry,
-  FeatureMetadata,
-} from "./src/decorators/feature-decorator";
+import ts from "typescript";
 
-export interface FeatureMetadata {
-  id: string;
-  name: string;
-  version: string;
-  routes?: RouteConfig[];
-  permissions?: string[];
-  dependencies?: string[];
-  icon?: string;
-  description?: string;
-  sourceFile?: string;
-  moduleName?: string;
-}
-
-export interface RouteConfig {
-  path: string;
-  name: string;
-  component?: string;
-  meta?: Record<string, any>;
-  children?: RouteConfig[];
-}
+import { FeatureMetadata } from "portal/feature-registry";
 
 export interface ParsedProject {
   projectName: string;
@@ -89,12 +67,12 @@ export class FeatureMetadataParser {
       if (ts.isClassDeclaration(node)) {
         const className = node.name?.getText(sourceFile) || "Anonymous";
 
-        if (node.decorators && node.decorators.length > 0) {
+        if ((ts.getDecorators(node) || []).length > 0) {
           const metadata = this.extractFeatureMetadata(node, sourceFile);
           if (metadata) {
             features.push(metadata);
           }
-        } else console.log("no dedorators for class ", className);
+        } else console.log("no decorators for class ", className);
       }
 
       ts.forEachChild(node, visit);
@@ -108,9 +86,9 @@ export class FeatureMetadataParser {
     classNode: ts.ClassDeclaration,
     sourceFile: ts.SourceFile
   ): FeatureMetadata | null {
-    if (!classNode.decorators) return null;
+    if (!ts.getDecorators(classNode)) return null;
 
-    for (const decorator of classNode.decorators) {
+    for (const decorator of ts.getDecorators(classNode)!) {
       let decoratorName: string;
       let decoratorArgs: ts.NodeArray<ts.Expression> =
         ts.factory.createNodeArray();
