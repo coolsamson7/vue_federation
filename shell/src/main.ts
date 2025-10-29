@@ -4,13 +4,12 @@ import { container, inject, singleton } from "tsyringe";
 
 import { createApp } from "vue";
 import App from "./App.vue";
-import router from "./router";
 import { createPinia } from "pinia";
 
 
 import Home from "./views/Home.vue";
-import { FeatureRegistry, MetadataLoaderService } from "portal";
-import { createRouter, createWebHistory, Router, RouteRecordRaw } from "vue-router";
+import { FeatureLoader, FeatureRegistry, MetadataLoaderService } from "portal";
+import { Router, RouteRecordRaw } from "vue-router";
 
 // local routes
 // TODO: change, so that it is symetrical
@@ -32,7 +31,7 @@ class Application {
 
     // constructor
 
-    constructor(@inject(FeatureRegistry) public featureRegistry: FeatureRegistry, @inject(MetadataLoaderService) public metadataLoader: MetadataLoaderService) {
+    constructor(@inject(FeatureLoader) public loader: FeatureLoader, @inject(FeatureRegistry) public featureRegistry: FeatureRegistry, @inject(MetadataLoaderService) public metadataLoader: MetadataLoaderService) {
         this.app.use(createPinia());
     }
 
@@ -51,24 +50,19 @@ class Application {
 
         this.metadataLoader.initializeFeatures();
 
-        // add dynamic routes
-
-        routes.push(...this.featureRegistry.generateRouterConfig());
-
         // and create router
 
-        this.router = createRouter({
-            history: createWebHistory(),
-            routes,
-        });
+        this.router = this.loader.setupRouter(routes);
 
         this.app.use(this.router);
     }
 }
 
+// create app
+
 const application = container.resolve(Application);
 
-// Bootstrap with metadata
+// bootstrap
 
 application.boot().then(() => {
   application.app.mount("#app");
