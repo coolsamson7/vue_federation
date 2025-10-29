@@ -12,6 +12,9 @@ import Home from "./views/Home.vue";
 import { FeatureRegistry, MetadataLoaderService } from "portal";
 import { createRouter, createWebHistory, Router, RouteRecordRaw } from "vue-router";
 
+// local routes
+// TODO: change, so that it is symetrical
+
 const routes: RouteRecordRaw[] = [
   {
     path: "/",
@@ -31,10 +34,6 @@ class Application {
 
     constructor(@inject(FeatureRegistry) public featureRegistry: FeatureRegistry, @inject(MetadataLoaderService) public metadataLoader: MetadataLoaderService) {
         this.app.use(createPinia());
-
-        // do we still need this? TODO
-
-        (window as any).__app__ = this.app;
     }
 
     // public
@@ -59,13 +58,11 @@ class Application {
         // and create router
 
         this.router = createRouter({
-                    history: createWebHistory(),
-                    routes,
-                  });
+            history: createWebHistory(),
+            routes,
+        });
 
         this.app.use(this.router);
-
-        (window as any).__router__ = router; // TODO ?
     }
 }
 

@@ -30,9 +30,21 @@ export interface RouteConfig {
   children?: RouteConfig[];
 }
 
+const containers: Record<string, any> = {};
+
+declare global {
+  interface Window {
+    __federation_shared__?: Record<string, unknown>;
+  }
+}
+
 @singleton()
 export class FeatureRegistry {
+  // instance data
+
   private features: Map<string, FeatureMetadata> = new Map();
+
+  // public
 
   register(metadata: FeatureMetadata) {
     this.features.set(metadata.id, metadata);
@@ -46,9 +58,31 @@ export class FeatureRegistry {
     return Array.from(this.features.values());
   }
 
-  async loadRemoteComponent(componentName: string): Promise<any> {
-    console.log("load remote component:", componentName);
+  // loader stuff
 
+  async loadRemoteContainer(config: RemoteConfig): Promise<any> {
+    const { url, scope } = config;
+
+    // Return cached container if already loaded
+    if (containers[scope]) return containers[scope];
+
+    try {
+      // Load remoteEntry
+      // @ts-ignore
+      const container = await import(/* @vite-ignore */ url);
+
+      // Initialize the container with shared modules
+      await container.init?.(window.__federation_shared__ || {});
+
+      containers[scope] = container;
+      return container;
+    } catch (err) {
+      console.error(`Failed to load remote container ${scope} from ${url}:`, err);
+      throw err;
+    }
+  }
+
+  async loadRemoteComponent(componentName: string): Promise<any> {
     const [moduleId, component] = componentName.split("/");
 
     const feature = this.get(moduleId);
@@ -58,10 +92,11 @@ export class FeatureRegistry {
 
     const container = await loadRemoteContainer(feature.remote);
     const factory = await container.get(`./${component}`);
+
     return factory(); // Vue component ready to render
   }
 
-  generateRouterConfig(): any[] { // TODO -> duplicate
+  generateRouterConfig(): any[] {
     const features = this.getAll();
     const routes: any[] = [];
     // build a map of available local components to avoid unsupported variable dynamic imports

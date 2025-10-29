@@ -6,9 +6,15 @@ import { RemoteContainerConfig } from "./remote-loader";
 
 @singleton()
 export class MetadataLoaderService {
+  // instance data
+
   private features: Map<string, FeatureMetadata> = new Map();
 
+  // constructor
+
   constructor(private featureRegistry: FeatureRegistry) {};
+
+  // public
 
   async loadFromJSON(json: string): Promise<void> {
     const data = JSON.parse(json);
@@ -37,33 +43,20 @@ export class MetadataLoaderService {
 
   async loadRemoteConfigs(endpoint: string): Promise<void> {
     const response = await fetch(endpoint);
-    const configs: Array<{ moduleId: string; remote: RemoteContainerConfig }> =
-      await response.json();
+    const configs: Array<{ moduleId: string; remote: RemoteContainerConfig }> = await response.json();
 
     configs.forEach(({ moduleId, remote }) => {
       const feature = this.features.get(moduleId);
       if (feature) {
+        // remember remote config
+
         feature.remote = remote;
+
+        // and register
+
         this.featureRegistry.register(feature);
       }
     });
-  }
-
-  configureRouter(router: any): void {
-    const routes = this.featureRegistry.generateRouterConfig();
-
-    this.featureRegistry.generateRouterConfig().forEach((route) => {
-      router.addRoute(route);
-    });
-
-    console.log(`✅ ${routes.length} routes configured from features`);
-  }
-
-  async loadRemoteModule(moduleUrl: string, moduleName: string): Promise<any> {
-    // @ts-ignore
-    const container = await import(/* @vite-ignore */ moduleUrl);
-    const factory = await container.get(moduleName);
-    return factory();
   }
 
   initializeFeatures(): void {

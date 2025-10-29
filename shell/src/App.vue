@@ -43,12 +43,14 @@ const menuItems = ref<any[]>([]);
 const metadata = ref("");
 const showMetadata = ref(false);
 
-const featureCount = computed(() => container.resolve(FeatureRegistry).getAll().length); // ADDED
+const featureRegistry = container.resolve(FeatureRegistry);
+
+const featureCount = computed(() => featureRegistry.getAll().length); // ADDED
 
 const refreshFeatures = () => {
   console.log("🔄 Refreshed features:", menuItems.value);
 
-  const features = container.resolve(FeatureRegistry).getAll();
+  const features = featureRegistry.getAll();
 
   menuItems.value = features.map((feature) => ({
     id: feature.id,
@@ -62,7 +64,7 @@ const refreshFeatures = () => {
 onMounted(() => {
   // Initial load
   refreshFeatures();
-  metadata.value = container.resolve(FeatureRegistry).exportToJSON();
+  metadata.value = featureRegistry.exportToJSON();
 
   // ADDED: Also refresh after a delay to catch late-loading modules
   setTimeout(refreshFeatures, 500);
@@ -70,7 +72,7 @@ onMounted(() => {
 });
 
 const exportMetadata = () => {
-  metadata.value = container.resolve(FeatureRegistry).exportToJSON();
+  metadata.value = featureRegistry.exportToJSON();
   console.log("Exported Metadata:", metadata.value);
 };
 
