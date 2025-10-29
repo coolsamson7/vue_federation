@@ -1,8 +1,6 @@
 import { singleton } from "tsyringe";
 
-import { FeatureRegistry, FeatureMetadata } from "./feature-registry";
-
-import { RemoteContainerConfig } from "./remote-loader";
+import { FeatureRegistry, FeatureMetadata, RemoteConfig } from "./feature-registry";
 
 @singleton()
 export class MetadataLoaderService {
@@ -43,7 +41,7 @@ export class MetadataLoaderService {
 
   async loadRemoteConfigs(endpoint: string): Promise<void> {
     const response = await fetch(endpoint);
-    const configs: Array<{ moduleId: string; remote: RemoteContainerConfig }> = await response.json();
+    const configs: Array<{ moduleId: string; remote: RemoteConfig }> = await response.json();
 
     configs.forEach(({ moduleId, remote }) => {
       const feature = this.features.get(moduleId);

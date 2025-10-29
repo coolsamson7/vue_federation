@@ -1,7 +1,5 @@
 import { singleton } from "tsyringe";
 
-import { loadRemoteContainer } from "./remote-loader";
-
 export interface RemoteConfig {
   url: string;
   scope: string;
@@ -77,7 +75,10 @@ export class FeatureRegistry {
       containers[scope] = container;
       return container;
     } catch (err) {
-      console.error(`Failed to load remote container ${scope} from ${url}:`, err);
+      console.error(
+        `Failed to load remote container ${scope} from ${url}:`,
+        err
+      );
       throw err;
     }
   }
@@ -90,7 +91,7 @@ export class FeatureRegistry {
       throw new Error(`No remote configuration found for module ${moduleId}`);
     }
 
-    const container = await loadRemoteContainer(feature.remote);
+    const container = await this.loadRemoteContainer(feature.remote);
     const factory = await container.get(`./${component}`);
 
     return factory(); // Vue component ready to render
@@ -158,13 +159,12 @@ export class FeatureRegistry {
     return routes;
   }
 
-  exportToJSON(): any {
-    //return JSON.stringify(
-      return {
-        features: this.getAll(),
-        timestamp: new Date().toISOString(),
-        version: "1.0.0",
-      };
+  export(): any {
+    return {
+      features: this.getAll(),
+      timestamp: new Date().toISOString(),
+      version: "1.0.0",
+    };
   }
 
   clear(): void {

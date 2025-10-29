@@ -15,7 +15,7 @@ async function main() {
   const registry = new FeatureRegistry();
   parsed.features.forEach(f => registry.register(f));
 
-  FeatureMetadataScanner.exportToJSON(registry.exportToJSON(), outputPath);
+  FeatureMetadataScanner.exportToJSON(registry.export(), outputPath);
 
   console.log(`✅ Found ${parsed.features.length} features in ${parsed.projectName}`);
   parsed.features.forEach(f => console.log(`  • ${f.name} (${f.id})`));
