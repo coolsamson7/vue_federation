@@ -12,9 +12,9 @@ const routes: RouteRecordRaw[] = [
 
 // Add dynamic routes from metadata
 
-routes.push(...FeatureRegistry.generateRouterConfig());
+//routes.push(...FeatureRegistry.generateRouterConfig());
 
-console.log(FeatureRegistry.getAll());
+//console.log(FeatureRegistry.getAll());
 
 const router = createRouter({
   history: createWebHistory(),

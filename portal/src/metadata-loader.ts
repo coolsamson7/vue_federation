@@ -1,9 +1,14 @@
+import { singleton } from "tsyringe";
+
 import { FeatureRegistry, FeatureMetadata } from "./feature-registry";
 
 import { RemoteContainerConfig } from "./remote-loader";
 
+@singleton()
 export class MetadataLoaderService {
   private features: Map<string, FeatureMetadata> = new Map();
+
+  constructor(private featureRegistry: FeatureRegistry) {};
 
   async loadFromJSON(json: string): Promise<void> {
     const data = JSON.parse(json);
@@ -11,7 +16,7 @@ export class MetadataLoaderService {
     if (data.features) {
       data.features.forEach((feature: FeatureMetadata) => {
         this.features.set(feature.id, feature);
-        FeatureRegistry.register(feature);
+        this.featureRegistry.register(feature);
       });
     }
   }
@@ -39,17 +44,15 @@ export class MetadataLoaderService {
       const feature = this.features.get(moduleId);
       if (feature) {
         feature.remote = remote;
-        FeatureRegistry.register(feature);
+        this.featureRegistry.register(feature);
       }
     });
   }
 
   configureRouter(router: any): void {
-    const features = FeatureRegistry.getAll();
+    const routes = this.featureRegistry.generateRouterConfig();
 
-    const routes = FeatureRegistry.generateRouterConfig();
-
-    routes.forEach((route) => {
+    this.featureRegistry.generateRouterConfig().forEach((route) => {
       router.addRoute(route);
     });
 
@@ -64,7 +67,7 @@ export class MetadataLoaderService {
   }
 
   initializeFeatures(): void {
-    const features = FeatureRegistry.getAll();
+    /*const features = FeatureRegistry.getAll();
 
     features.forEach((feature) => {
       console.log(`✅ Initialized: ${feature.name} v${feature.version}`);
@@ -78,6 +81,6 @@ export class MetadataLoaderService {
           }
         });
       }
-    });
+    });*/
   }
 }

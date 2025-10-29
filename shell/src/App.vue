@@ -36,18 +36,19 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
+import { container } from "tsyringe";
 import { FeatureRegistry } from "portal";
 
 const menuItems = ref<any[]>([]);
 const metadata = ref("");
 const showMetadata = ref(false);
 
-const featureCount = computed(() => FeatureRegistry.getAll().length); // ADDED
+const featureCount = computed(() => container.resolve(FeatureRegistry).getAll().length); // ADDED
 
 const refreshFeatures = () => {
   console.log("🔄 Refreshed features:", menuItems.value);
 
-  const features = FeatureRegistry.getAll();
+  const features = container.resolve(FeatureRegistry).getAll();
 
   menuItems.value = features.map((feature) => ({
     id: feature.id,
@@ -61,7 +62,7 @@ const refreshFeatures = () => {
 onMounted(() => {
   // Initial load
   refreshFeatures();
-  metadata.value = FeatureRegistry.exportToJSON();
+  metadata.value = container.resolve(FeatureRegistry).exportToJSON();
 
   // ADDED: Also refresh after a delay to catch late-loading modules
   setTimeout(refreshFeatures, 500);
@@ -69,7 +70,7 @@ onMounted(() => {
 });
 
 const exportMetadata = () => {
-  metadata.value = FeatureRegistry.exportToJSON();
+  metadata.value = container.resolve(FeatureRegistry).exportToJSON();
   console.log("Exported Metadata:", metadata.value);
 };
 

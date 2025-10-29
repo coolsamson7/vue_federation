@@ -1,11 +1,10 @@
-import {
-  FeatureRegistry,
-  MetadataLoaderService,
-} from "portal";
+import { container } from "tsyringe";
+
+import {FeatureRegistry, MetadataLoaderService} from "portal";
 
 
 export async function bootstrapApplication(): Promise<void> {
-  const metadataLoader = new MetadataLoaderService();
+  const metadataLoader = container.resolve(MetadataLoaderService);
 
   try {
     // Lade Basis-Metadaten
@@ -20,9 +19,9 @@ export async function bootstrapApplication(): Promise<void> {
     // Konfiguriere Router
     const router = (window as any).__router__;
     if (router) {
-      FeatureRegistry.generateRouterConfig().forEach((route) => {
-        router.addRoute(route);
-      });
+      //FeatureRegistry.generateRouterConfig().forEach((route) => {
+      //  router.addRoute(route);
+      //});
     }
 
     console.log("🚀 Application bootstrapped successfully");

@@ -19,12 +19,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { container } from "tsyringe";
 import { FeatureRegistry } from 'portal';
 
 const features = ref<any[]>([]);
 
 onMounted(() => {
-  features.value = FeatureRegistry.getAll();
+  features.value = container.resolve(FeatureRegistry).getAll();
 });
 </script>
 

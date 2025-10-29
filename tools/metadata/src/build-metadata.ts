@@ -1,4 +1,6 @@
 #!/usr/bin/env tsx
+import "reflect-metadata";
+
 import * as path from "path";
 import { FeatureMetadataScanner } from "./feature-parser";
 import { FeatureRegistry } from "portal";
@@ -10,8 +12,10 @@ async function main() {
   console.log(`🔍 Scanning ${projectPath} for features...`);
   const parsed = FeatureMetadataScanner.scanProject(projectPath);
 
-  parsed.features.forEach(f => FeatureRegistry.register(f));
-  FeatureMetadataScanner.exportToJSON(parsed, outputPath);
+  const registry = new FeatureRegistry();
+  parsed.features.forEach(f => registry.register(f));
+
+  FeatureMetadataScanner.exportToJSON(registry.exportToJSON(), outputPath);
 
   console.log(`✅ Found ${parsed.features.length} features in ${parsed.projectName}`);
   parsed.features.forEach(f => console.log(`  • ${f.name} (${f.id})`));

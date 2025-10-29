@@ -23,7 +23,8 @@ export default defineConfig({
            singleton: true,
            requiredVersion: "^3.0.3",
          },
-        portal: { singleton: true }
+        portal: { singleton: true },
+        tsyringe: { singleton: true, eager: true },
       } as any,
     }),
   ],
@@ -34,10 +35,10 @@ export default defineConfig({
   },
   resolve: {
     alias: [
-        {
-      find: "@portal",
-                     replacement: path.resolve(__dirname, "../portal/src"),
-     },
+      {
+       find: "@portal",
+       replacement: path.resolve(__dirname, "../portal/src"),
+      },
       {
         // exact `import 'vue'` should use the runtime compiler build
         find: /^vue$/,

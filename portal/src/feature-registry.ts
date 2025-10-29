@@ -1,3 +1,5 @@
+import { singleton } from "tsyringe";
+
 import { loadRemoteContainer } from "./remote-loader";
 
 export interface RemoteConfig {
@@ -28,22 +30,23 @@ export interface RouteConfig {
   children?: RouteConfig[];
 }
 
+@singleton()
 export class FeatureRegistry {
-  private static features: Map<string, FeatureMetadata> = new Map();
+  private features: Map<string, FeatureMetadata> = new Map();
 
-  static register(metadata: FeatureMetadata) {
+  register(metadata: FeatureMetadata) {
     this.features.set(metadata.id, metadata);
   }
 
-  static get(id: string): FeatureMetadata | undefined {
+  get(id: string): FeatureMetadata | undefined {
     return this.features.get(id);
   }
 
-  static getAll(): FeatureMetadata[] {
+  getAll(): FeatureMetadata[] {
     return Array.from(this.features.values());
   }
 
-  static async loadRemoteComponent(componentName: string): Promise<any> {
+  async loadRemoteComponent(componentName: string): Promise<any> {
     console.log("load remote component:", componentName);
 
     const [moduleId, component] = componentName.split("/");
@@ -58,7 +61,7 @@ export class FeatureRegistry {
     return factory(); // Vue component ready to render
   }
 
-  static generateRouterConfig(): any[] {
+  generateRouterConfig(): any[] { // TODO -> duplicate
     const features = this.getAll();
     const routes: any[] = [];
     // build a map of available local components to avoid unsupported variable dynamic imports
@@ -80,7 +83,7 @@ export class FeatureRegistry {
               // Handle remote components
               if (route.component.startsWith("remote:")) {
                 const remotePath = route.component.replace(/^remote:/, "");
-                return FeatureRegistry.loadRemoteComponent(remotePath).catch(
+                return this.loadRemoteComponent(remotePath).catch(
                   (err: any) => {
                     console.error(
                       `Failed to load remote component ${remotePath}:`,
@@ -120,19 +123,16 @@ export class FeatureRegistry {
     return routes;
   }
 
-  static exportToJSON(): string {
-    return JSON.stringify(
-      {
+  exportToJSON(): any {
+    //return JSON.stringify(
+      return {
         features: this.getAll(),
         timestamp: new Date().toISOString(),
         version: "1.0.0",
-      },
-      null,
-      2
-    );
+      };
   }
 
-  static clear(): void {
+  clear(): void {
     this.features.clear();
   }
 }

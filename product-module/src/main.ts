@@ -1,4 +1,5 @@
 import "reflect-metadata";
+
 import { createApp } from "vue";
 import "./ProductModule";
 
