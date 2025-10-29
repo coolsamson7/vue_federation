@@ -64,7 +64,7 @@ const refreshFeatures = () => {
 onMounted(() => {
   // Initial load
   refreshFeatures();
-  metadata.value = featureRegistry.exportToJSON();
+  metadata.value = featureRegistry.exportJSON();
 
   // ADDED: Also refresh after a delay to catch late-loading modules
   setTimeout(refreshFeatures, 500);
@@ -72,7 +72,7 @@ onMounted(() => {
 });
 
 const exportMetadata = () => {
-  metadata.value = featureRegistry.exportToJSON();
+  metadata.value = featureRegistry.exportJSON();
   console.log("Exported Metadata:", metadata.value);
 };
 

@@ -28,7 +28,6 @@ export interface RouteConfig {
   children?: RouteConfig[];
 }
 
-
 @singleton()
 export class FeatureRegistry {
   // instance data
@@ -49,6 +48,9 @@ export class FeatureRegistry {
     return Array.from(this.features.values());
   }
 
+  exportJSON(): string {
+    return JSON.stringify(this.export(), null, 2);
+  }
 
   export(): any {
     return {

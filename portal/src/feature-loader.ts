@@ -74,9 +74,9 @@ export class FeatureLoader {
          // done
 
          return createRouter({
-                     history: createWebHistory(),
-                     routes,
-                 });
+              history: createWebHistory(),
+              routes,
+          });
      }
 
       generateRoutes(): any[] {
