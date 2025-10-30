@@ -3,29 +3,20 @@ import * as path from "path";
 import { glob } from "glob";
 import ts from "typescript";
 
-import { FeatureMetadata } from "portal/feature-registry";
-
-export interface ParsedProject {
-  projectName: string;
-  projectPath: string;
-  features: FeatureMetadata[];
-  timestamp: string;
-  version: string;
-}
+import { FeatureMetadata, ModuleMetadata } from "portal/feature-registry";
 
 export class FeatureMetadataParser {
   private program: ts.Program;
   private checker: ts.TypeChecker;
 
-  constructor(private configPath: string) {
-    const config = ts.readConfigFile(configPath, ts.sys.readFile);
+  constructor(private tsconfigPath: string) {
+    const config = ts.readConfigFile(tsconfigPath, ts.sys.readFile);
     const baseParsedConfig = ts.parseJsonConfigFileContent(
       config.config,
       ts.sys,
-      path.dirname(configPath)
+      path.dirname(tsconfigPath)
     );
 
-    // Ensure experimental decorators are enabled
     const parsedConfig = {
       ...baseParsedConfig,
       options: {
@@ -40,92 +31,132 @@ export class FeatureMetadataParser {
       options: parsedConfig.options,
       projectReferences: parsedConfig.projectReferences,
     });
+
     this.checker = this.program.getTypeChecker();
   }
 
-  parseDirectory(dirPath: string): FeatureMetadata[] {
-    const features: FeatureMetadata[] = [];
+  parseDirectory(dirPath: string): ModuleMetadata[] {
+    const modules: ModuleMetadata[] = [];
     const files = glob.sync(`${dirPath}/**/*.ts`, {
       ignore: "**/node_modules/**",
     });
 
     for (const file of files) {
       const sourceFile = this.program.getSourceFile(path.resolve(file));
-      if (!sourceFile) {
-        console.warn(`⚠️ File not part of program: ${file}`);
-        continue;
+      if (!sourceFile) continue;
+
+      const moduleMetadata = this.parseSourceFileForModule(sourceFile);
+      if (moduleMetadata) {
+        // Merge features from folder and preserve any features in the module decorator
+        const folderFeatures = this.collectFeaturesFromFolder(path.dirname(file));
+        moduleMetadata.features = [
+          ...(moduleMetadata.features || []),
+          ...folderFeatures,
+        ];
+        moduleMetadata.moduleName = path.basename(sourceFile.fileName);
+        modules.push(moduleMetadata);
       }
-      features.push(...this.parseSourceFile(sourceFile));
     }
 
-    return features;
+    return modules;
   }
 
-  private parseSourceFile(sourceFile: ts.SourceFile): FeatureMetadata[] {
-    const features: FeatureMetadata[] = [];
+  private parseSourceFileForModule(
+    sourceFile: ts.SourceFile
+  ): ModuleMetadata | null {
+    let foundModule: ModuleMetadata | null = null;
+
     const visit = (node: ts.Node) => {
       if (ts.isClassDeclaration(node)) {
-        const className = node.name?.getText(sourceFile) || "Anonymous";
+        const decorators = ts.getDecorators(node) || [];
+        for (const decorator of decorators) {
+          let decoratorName: string;
+          let decoratorArgs: ts.NodeArray<ts.Expression> = ts.factory.createNodeArray();
 
-        if ((ts.getDecorators(node) || []).length > 0) {
-          const metadata = this.extractFeatureMetadata(node, sourceFile);
-          if (metadata) {
-            features.push(metadata);
+          if (ts.isCallExpression(decorator.expression)) {
+            decoratorName = decorator.expression.expression.getText(sourceFile);
+            decoratorArgs = decorator.expression.arguments;
+          } else if (ts.isIdentifier(decorator.expression)) {
+            decoratorName = decorator.expression.getText(sourceFile);
+          } else {
+            continue;
           }
-        } else console.log("no decorators for class ", className);
+
+          if (decoratorName === "FeatureModule") {
+            if (foundModule)
+              throw new Error(
+                `Multiple @FeatureModule decorators found in ${sourceFile.fileName}`
+              );
+
+            const moduleData: ModuleMetadata = {
+              id: "",
+              label: "",
+              version: "",
+              features: [],
+            };
+
+            if (decoratorArgs.length > 0 && ts.isObjectLiteralExpression(decoratorArgs[0])) {
+              Object.assign(moduleData, this.parseObjectLiteral(decoratorArgs[0], sourceFile));
+            }
+
+            foundModule = moduleData;
+          }
+        }
       }
 
       ts.forEachChild(node, visit);
     };
 
     visit(sourceFile);
-    return features;
+    return foundModule;
   }
 
-  private extractFeatureMetadata(
-    classNode: ts.ClassDeclaration,
-    sourceFile: ts.SourceFile
-  ): FeatureMetadata | null {
-    if (!ts.getDecorators(classNode)) return null;
+  private collectFeaturesFromFolder(folderPath: string): FeatureMetadata[] {
+    const features: FeatureMetadata[] = [];
+    const files = glob.sync(`${folderPath}/**/*.ts`, {
+      ignore: "**/node_modules/**",
+    });
 
-    for (const decorator of ts.getDecorators(classNode)!) {
-      let decoratorName: string;
-      let decoratorArgs: ts.NodeArray<ts.Expression> =
-        ts.factory.createNodeArray();
+    for (const file of files) {
+      const sourceFile = this.program.getSourceFile(path.resolve(file));
+      if (!sourceFile) continue;
 
-      if (ts.isCallExpression(decorator.expression)) {
-        decoratorName = decorator.expression.expression.getText(sourceFile);
-        decoratorArgs = decorator.expression.arguments;
-      } else if (ts.isIdentifier(decorator.expression)) {
-        decoratorName = decorator.expression.getText(sourceFile);
-      } else {
-        continue;
-      }
+      ts.forEachChild(sourceFile, (node) => {
+        if (!ts.isClassDeclaration(node)) return;
 
-      if (decoratorName === "FeatureModule" || decoratorName === "Feature") {
-        const metadata: FeatureMetadata = {
-          id: "",
-          name: "",
-          version: "",
-          sourceFile: sourceFile.fileName,
-          moduleName: classNode.name?.getText(sourceFile),
-        };
+        const decorators = ts.getDecorators(node) || [];
+        for (const decorator of decorators) {
+          let decoratorName: string;
+          let decoratorArgs: ts.NodeArray<ts.Expression> = ts.factory.createNodeArray();
 
-        if (
-          decoratorArgs.length > 0 &&
-          ts.isObjectLiteralExpression(decoratorArgs[0])
-        ) {
-          Object.assign(
-            metadata,
-            this.parseObjectLiteral(decoratorArgs[0], sourceFile)
-          );
+          if (ts.isCallExpression(decorator.expression)) {
+            decoratorName = decorator.expression.expression.getText(sourceFile);
+            decoratorArgs = decorator.expression.arguments;
+          } else if (ts.isIdentifier(decorator.expression)) {
+            decoratorName = decorator.expression.getText(sourceFile);
+          } else {
+            continue;
+          }
+
+          if (decoratorName === "Feature") {
+            const metadata: FeatureMetadata = {
+              id: "",
+              label: "",
+              path: "",
+              component: node.name?.getText(sourceFile)!,
+            };
+
+            if (decoratorArgs.length > 0 && ts.isObjectLiteralExpression(decoratorArgs[0])) {
+              Object.assign(metadata, this.parseObjectLiteral(decoratorArgs[0], sourceFile));
+            }
+
+            features.push(metadata);
+          }
         }
-
-        return metadata;
-      }
+      });
     }
 
-    return null;
+    return features;
   }
 
   private parseObjectLiteral(
@@ -133,7 +164,6 @@ export class FeatureMetadataParser {
     sourceFile: ts.SourceFile
   ): Record<string, any> {
     const result: Record<string, any> = {};
-
     for (const property of obj.properties) {
       if (ts.isPropertyAssignment(property)) {
         const name = property.name.getText(sourceFile);
@@ -141,14 +171,10 @@ export class FeatureMetadataParser {
         result[name] = value;
       }
     }
-
     return result;
   }
 
-  private evaluateExpression(
-    expr: ts.Expression,
-    sourceFile: ts.SourceFile
-  ): any {
+  private evaluateExpression(expr: ts.Expression, sourceFile: ts.SourceFile): any {
     if (ts.isStringLiteral(expr)) return expr.text;
     if (ts.isNumericLiteral(expr)) return Number(expr.text);
     if (expr.kind === ts.SyntaxKind.TrueKeyword) return true;
@@ -161,58 +187,29 @@ export class FeatureMetadataParser {
   }
 }
 
-// Scanner class stays unchanged
 export class FeatureMetadataScanner {
-  static scanProject(projectPath: string): ParsedProject {
-    console.log("🔍 Scanning project path:", projectPath);
-    const packageJsonPath = path.join(projectPath, "package.json");
-    const tsconfigPath = path.join(projectPath, "tsconfig.json");
-
+  static scanModuleFolder(moduleFolderPath: string): ModuleMetadata {
+    const tsconfigPath = path.join(moduleFolderPath, "tsconfig.json");
     if (!fs.existsSync(tsconfigPath)) {
-      throw new Error(`tsconfig.json not found in ${projectPath}`);
-    }
-
-    let projectName = path.basename(projectPath);
-    if (fs.existsSync(packageJsonPath)) {
-      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
-      projectName = packageJson.name || projectName;
+      throw new Error(`tsconfig.json not found in ${moduleFolderPath}`);
     }
 
     const parser = new FeatureMetadataParser(tsconfigPath);
-    // Suche in allen relevanten Verzeichnissen
-    const features = [
-      ...parser.parseDirectory(projectPath),
-      ...parser.parseDirectory(path.join(projectPath, "src")),
-    ].filter(Boolean); // Entferne null-Werte
+    const modules = parser.parseDirectory(moduleFolderPath);
 
-    return {
-      projectName,
-      projectPath,
-      features,
-      timestamp: new Date().toISOString(),
-      version: "1.0.0",
-    };
+    if (modules.length === 0)
+      throw new Error(`No @FeatureModule found in ${moduleFolderPath}`);
+
+    if (modules.length > 1)
+      throw new Error(`Multiple @FeatureModule found in ${moduleFolderPath}`);
+
+    return modules[0];
   }
 
-  static scanMultipleProjects(projectPaths: string[]): {
-    projects: ParsedProject[];
-    allFeatures: FeatureMetadata[];
-    timestamp: string;
-  } {
-    const projects = projectPaths.map((p) => this.scanProject(p));
-    const allFeatures = projects.flatMap((p) => p.features);
-
-    return {
-      projects,
-      allFeatures,
-      timestamp: new Date().toISOString(),
-    };
-  }
-
-  static exportToJSON(data: any, outputPath: string): void {
+  static exportToJSON(data: ModuleMetadata, outputPath: string): void {
     const dir = path.dirname(outputPath);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(outputPath, JSON.stringify(data, null, 2), "utf-8");
-    console.log(`✅ Metadata exported to ${outputPath}`);
+    console.log(`✅ Module metadata exported to ${outputPath}`);
   }
 }
