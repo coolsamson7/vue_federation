@@ -1,0 +1,40 @@
+{
+  "name": "product-module",
+  "root": "apps/product-module",
+  "sourceRoot": "apps/product-module/src",
+  "projectType": "library",
+  "targets": {
+    "scan": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "nx run metadata:scan --args='--moduleFolder=apps/product-module --outFile=dist/apps/product-module/metadata.json'"
+      }
+    },
+    "build": {
+      "executor": "@nx/vite:build",
+      "outputs": ["{options.outputPath}"],
+      "dependsOn": ["scan"],
+      "options": {
+        "viteConfig": "apps/product-module/vite.config.ts",
+        "outputPath": "dist/apps/product-module",
+        "emptyOutDir": true
+      },
+      "configurations": {
+        "lib": {
+          "env": {
+            "BUILD_MODE": "lib"
+          }
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/vite:dev-server",
+      "options": {
+        "buildTarget": "product-module:build",
+        "port": 5002
+      },
+      "dependsOn": ["build"]
+    }
+  },
+  "tags": []
+}

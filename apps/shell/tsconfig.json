@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc/apps/shell",
+    "types": ["vite/client"],
+    "target": "esnext",
+    "module": "esnext",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "useDefineForClassFields": false,
+    "baseUrl": "../../",
+    "declaration": true,
+    "composite": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.vue"],
+  "exclude": ["**/*.spec.ts"]
+}

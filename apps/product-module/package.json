@@ -1,0 +1,10 @@
+{
+  "name": "product-module",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "nx build product-module",
+    "serve": "nx serve product-module",
+    "scan:metadata": "tsx ../../libs/tools/metadata/src/build-metadata.ts ./ dist/metadata.json"
+  }
+}

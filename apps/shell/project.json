@@ -1,0 +1,40 @@
+{
+  "name": "shell",
+  "root": "apps/shell",
+  "sourceRoot": "apps/shell/src",
+  "projectType": "application",
+  "targets": {
+    "scan": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "nx run metadata:scan --args='--moduleFolder=apps/shell --outFile=dist/apps/shell/metadata.json'"
+      }
+    },
+    "build": {
+      "executor": "@nx/vite:build",
+      "dependsOn": ["scan"],
+      "options": {
+        "viteConfig": "apps/shell/vite.config.ts",
+        "tsConfig": "apps/shell/tsconfig.json",
+        "outputPath": "dist/apps/shell",
+        "emptyOutDir": true,
+        "buildLibsFromSource": true
+      },
+      "configurations": {
+        "production": {
+          "buildLibsFromSource": true
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/vite:dev-server",
+      "options": {
+        "viteConfig": "apps/shell/vite.config.ts",
+        "tsConfig": "apps/shell/tsconfig.json",
+        "buildTarget": "shell:build",
+        "port": 5000
+      }
+    }
+  },
+  "tags": []
+}

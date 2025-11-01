@@ -1,0 +1,14 @@
+{
+  "name": "metadata",
+  "sourceRoot": "tools/metadata/src",
+  "projectType": "library",
+  "targets": {
+    "scan": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsx tools/metadata/src/build-metadata.ts {projectRoot} dist/{projectRoot}/metadata.json"
+      }
+    }
+  },
+  "tags": []
+}

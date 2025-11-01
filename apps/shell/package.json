@@ -1,0 +1,14 @@
+{
+  "name": "shell",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nx build shell",
+    "serve": "nx serve shell",
+    "scan:metadata": "tsx ../../libs/tools/metadata/src/build-metadata.ts ./ dist/metadata.json"
+  },
+  "devDependencies": {
+    "vite-plugin-tsc": "^0.1.1"
+  }
+}

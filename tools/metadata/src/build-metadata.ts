@@ -1,27 +1,33 @@
 #!/usr/bin/env tsx
-import "reflect-metadata";
-
+import * as fs from "fs";
 import * as path from "path";
-import { FeatureMetadataScanner } from "./feature-parser";
-import { FeatureRegistry } from "portal";
+import { FeatureMetadataParser, FeatureMetadataScanner } from "./feature-parser";
 
-const projectPath = process.argv[2] || process.cwd();
-const outputPath = process.argv[3] || path.join(projectPath, "dist", "metadata.json");
+// read CLI args
+const args = process.argv.slice(2);
+const moduleFolderArgIndex = args.findIndex(a => a.startsWith("--moduleFolder="));
+const outFileArgIndex = args.findIndex(a => a.startsWith("--outFile="));
 
-async function main() {
-  console.log(`🔍 Scanning ${projectPath} for features...`);
-  const parsed = FeatureMetadataScanner.scanProject(projectPath);
-
-  const registry = new FeatureRegistry();
-  parsed.features.forEach(f => registry.register(f));
-
-  FeatureMetadataScanner.exportToJSON(registry.export(), outputPath);
-
-  console.log(`✅ Found ${parsed.features.length} features in ${parsed.projectName}`);
-  parsed.features.forEach(f => console.log(`  • ${f.name} (${f.id})`));
+if (moduleFolderArgIndex === -1 || outFileArgIndex === -1) {
+  throw new Error("Usage: build-metadata.ts --moduleFolder=<path> --outFile=<file>");
 }
 
-main().catch(err => {
-  console.error(err);
-  process.exit(1);
-});
+const moduleFolder = args[moduleFolderArgIndex].split("=")[1];
+const outputFile = args[outFileArgIndex].split("=")[1];
+
+// determine tsconfig in the module folder
+const tsconfigFile = fs.existsSync(path.join(moduleFolder, "tsconfig.app.json"))
+    ? path.join(moduleFolder, "tsconfig.app.json")
+    : fs.existsSync(path.join(moduleFolder, "tsconfig.json"))
+    ? path.join(moduleFolder, "tsconfig.json")
+    : (() => { throw new Error(`No tsconfig found in ${moduleFolder}. Tried tsconfig.json and tsconfig.app.json`); })();
+
+// parse features
+const parser = new FeatureMetadataParser(tsconfigFile);
+const moduleData = parser.parseDirectory(moduleFolder);
+
+console.log(moduleData);
+
+// export JSON
+if (moduleData.length > 0)
+FeatureMetadataScanner.exportToJSON(moduleData[0], outputFile);

@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc/apps/product-module",
+    "rootDir": "../../",
+    "types": ["vite/client"],
+    "allowJs": true,
+    "composite": false,
+    "baseUrl": "../../",
+    "paths": {
+      "portal": ["libs/portal/src/index.ts"],
+      "portal/*": ["libs/portal/src/*"]
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.vue",
+    "libs/portal/src/**/*.ts"
+  ],
+  "exclude": ["**/*.spec.ts"]
+}

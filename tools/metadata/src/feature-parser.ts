@@ -10,6 +10,10 @@ export class FeatureMetadataParser {
   private checker: ts.TypeChecker;
 
   constructor(private tsconfigPath: string) {
+    if (!fs.existsSync(tsconfigPath)) {
+      throw new Error(`tsconfig not found: ${tsconfigPath}`);
+    }
+
     const config = ts.readConfigFile(tsconfigPath, ts.sys.readFile);
     const baseParsedConfig = ts.parseJsonConfigFileContent(
       config.config,
@@ -37,9 +41,7 @@ export class FeatureMetadataParser {
 
   parseDirectory(dirPath: string): ModuleMetadata[] {
     const modules: ModuleMetadata[] = [];
-    const files = glob.sync(`${dirPath}/**/*.ts`, {
-      ignore: "**/node_modules/**",
-    });
+    const files = glob.sync(`${dirPath}/**/*.ts`, { ignore: "**/node_modules/**" });
 
     for (const file of files) {
       const sourceFile = this.program.getSourceFile(path.resolve(file));
@@ -47,12 +49,19 @@ export class FeatureMetadataParser {
 
       const moduleMetadata = this.parseSourceFileForModule(sourceFile);
       if (moduleMetadata) {
-        // Merge features from folder and preserve any features in the module decorator
+        // Collect standalone features
         const folderFeatures = this.collectFeaturesFromFolder(path.dirname(file));
-        moduleMetadata.features = [
-          ...(moduleMetadata.features || []),
-          ...folderFeatures,
-        ];
+        moduleMetadata.features = [...(moduleMetadata.features || []), ...folderFeatures];
+
+        moduleMetadata.features.forEach(f => {
+          if (!f.sourceFile) {
+            const vueFile = glob.sync(`**/${f.component}.vue`, { cwd: path.dirname(file) })[0];
+            f.sourceFile = vueFile
+              ? path.relative(process.cwd(), path.join(path.dirname(file), vueFile))
+              : path.relative(process.cwd(), file);
+          }
+        });
+
         moduleMetadata.moduleName = path.basename(sourceFile.fileName);
         modules.push(moduleMetadata);
       }
@@ -61,9 +70,7 @@ export class FeatureMetadataParser {
     return modules;
   }
 
-  private parseSourceFileForModule(
-    sourceFile: ts.SourceFile
-  ): ModuleMetadata | null {
+  private parseSourceFileForModule(sourceFile: ts.SourceFile): ModuleMetadata | null {
     let foundModule: ModuleMetadata | null = null;
 
     const visit = (node: ts.Node) => {
@@ -78,9 +85,7 @@ export class FeatureMetadataParser {
             decoratorArgs = decorator.expression.arguments;
           } else if (ts.isIdentifier(decorator.expression)) {
             decoratorName = decorator.expression.getText(sourceFile);
-          } else {
-            continue;
-          }
+          } else continue;
 
           if (decoratorName === "FeatureModule") {
             if (foundModule)
@@ -93,17 +98,25 @@ export class FeatureMetadataParser {
               label: "",
               version: "",
               features: [],
+              moduleName:
+                node.name?.getText(sourceFile) || path.basename(sourceFile.fileName, ".ts"),
+              sourceFile: path.relative(process.cwd(), sourceFile.fileName),
             };
 
-            if (decoratorArgs.length > 0 && ts.isObjectLiteralExpression(decoratorArgs[0])) {
-              Object.assign(moduleData, this.parseObjectLiteral(decoratorArgs[0], sourceFile));
+            if (
+              decoratorArgs.length > 0 &&
+              ts.isObjectLiteralExpression(decoratorArgs[0])
+            ) {
+              Object.assign(
+                moduleData,
+                this.parseObjectLiteral(decoratorArgs[0], sourceFile)
+              );
             }
 
             foundModule = moduleData;
           }
         }
       }
-
       ts.forEachChild(node, visit);
     };
 
@@ -113,15 +126,13 @@ export class FeatureMetadataParser {
 
   private collectFeaturesFromFolder(folderPath: string): FeatureMetadata[] {
     const features: FeatureMetadata[] = [];
-    const files = glob.sync(`${folderPath}/**/*.ts`, {
-      ignore: "**/node_modules/**",
-    });
+    const files = glob.sync(`${folderPath}/**/*.ts`, { ignore: "**/node_modules/**" });
 
     for (const file of files) {
       const sourceFile = this.program.getSourceFile(path.resolve(file));
       if (!sourceFile) continue;
 
-      ts.forEachChild(sourceFile, (node) => {
+      ts.forEachChild(sourceFile, node => {
         if (!ts.isClassDeclaration(node)) return;
 
         const decorators = ts.getDecorators(node) || [];
@@ -134,9 +145,7 @@ export class FeatureMetadataParser {
             decoratorArgs = decorator.expression.arguments;
           } else if (ts.isIdentifier(decorator.expression)) {
             decoratorName = decorator.expression.getText(sourceFile);
-          } else {
-            continue;
-          }
+          } else continue;
 
           if (decoratorName === "Feature") {
             const metadata: FeatureMetadata = {
@@ -144,11 +153,23 @@ export class FeatureMetadataParser {
               label: "",
               path: "",
               component: node.name?.getText(sourceFile)!,
+              sourceFile: "",
             };
 
-            if (decoratorArgs.length > 0 && ts.isObjectLiteralExpression(decoratorArgs[0])) {
-              Object.assign(metadata, this.parseObjectLiteral(decoratorArgs[0], sourceFile));
+            if (
+              decoratorArgs.length > 0 &&
+              ts.isObjectLiteralExpression(decoratorArgs[0])
+            ) {
+              Object.assign(
+                metadata,
+                this.parseObjectLiteral(decoratorArgs[0], sourceFile)
+              );
             }
+
+            const vueFile = glob.sync(`**/${metadata.component}.vue`, { cwd: folderPath })[0];
+            metadata.sourceFile = vueFile
+              ? path.relative(process.cwd(), path.join(folderPath, vueFile))
+              : path.relative(process.cwd(), sourceFile.fileName);
 
             features.push(metadata);
           }
@@ -159,10 +180,7 @@ export class FeatureMetadataParser {
     return features;
   }
 
-  private parseObjectLiteral(
-    obj: ts.ObjectLiteralExpression,
-    sourceFile: ts.SourceFile
-  ): Record<string, any> {
+  private parseObjectLiteral(obj: ts.ObjectLiteralExpression, sourceFile: ts.SourceFile): Record<string, any> {
     const result: Record<string, any> = {};
     for (const property of obj.properties) {
       if (ts.isPropertyAssignment(property)) {
@@ -180,7 +198,7 @@ export class FeatureMetadataParser {
     if (expr.kind === ts.SyntaxKind.TrueKeyword) return true;
     if (expr.kind === ts.SyntaxKind.FalseKeyword) return false;
     if (ts.isArrayLiteralExpression(expr))
-      return expr.elements.map((el) => this.evaluateExpression(el, sourceFile));
+      return expr.elements.map(el => this.evaluateExpression(el, sourceFile));
     if (ts.isObjectLiteralExpression(expr))
       return this.parseObjectLiteral(expr, sourceFile);
     return expr.getText(sourceFile).replace(/['"]/g, "");
@@ -189,9 +207,17 @@ export class FeatureMetadataParser {
 
 export class FeatureMetadataScanner {
   static scanModuleFolder(moduleFolderPath: string): ModuleMetadata {
-    const tsconfigPath = path.join(moduleFolderPath, "tsconfig.json");
-    if (!fs.existsSync(tsconfigPath)) {
-      throw new Error(`tsconfig.json not found in ${moduleFolderPath}`);
+    // detect tsconfig.app.json automatically
+    const tsconfigCandidates = [
+      path.join(moduleFolderPath, "tsconfig.app.json"),
+      path.join(moduleFolderPath, "tsconfig.json"),
+    ];
+
+    const tsconfigPath = tsconfigCandidates.find(fs.existsSync);
+    if (!tsconfigPath) {
+      throw new Error(
+        `No tsconfig.app.json or tsconfig.json found in ${moduleFolderPath}`
+      );
     }
 
     const parser = new FeatureMetadataParser(tsconfigPath);

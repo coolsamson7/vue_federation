@@ -1,0 +1,10 @@
+{
+  "extends": "nx/presets/npm.json",
+  "projects": {
+    "shell": "apps/shell",
+    "product-module": "apps/product-module",
+    "user-module": "apps/user-module",
+    "portal": "libs/portal",
+    "metadata": "libs/tools/metadata"
+  }
+}

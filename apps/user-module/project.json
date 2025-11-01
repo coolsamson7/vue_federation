@@ -1,0 +1,41 @@
+{
+  "name": "user-module",
+  "root": "apps/user-module",
+  "sourceRoot": "apps/user-module/src",
+  "projectType": "library",
+  "targets": {
+    "scan": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "nx run metadata:scan --args='--moduleFolder=apps/user-module --outFile=dist/apps/user-module/metadata.json'"
+      }
+    },
+    "build": {
+      "executor": "@nx/vite:build",
+      "outputs": ["{options.outputPath}"],
+      "dependsOn": ["scan"],
+      "options": {
+        "viteConfig": "apps/user-module/vite.config.mjs",
+        "tsConfig": "apps/user-module/tsconfig.app.json",
+        "outputPath": "dist/apps/user-module",
+        "emptyOutDir": true
+      },
+      "configurations": {
+        "lib": {
+          "env": {
+            "BUILD_MODE": "lib"
+          }
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/vite:dev-server",
+      "options": {
+        "buildTarget": "user-module:build",
+        "port": 5003
+      },
+      "dependsOn": ["build"]
+    }
+  },
+  "tags": []
+}

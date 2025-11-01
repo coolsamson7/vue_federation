@@ -1,0 +1,17 @@
+{
+  "name": "portal",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/portal/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "options": {
+        "outputPath": "dist/libs/portal",
+        "main": "libs/portal/src/index.ts",
+        "tsConfig": "libs/portal/tsconfig.lib.json"
+      }
+    }
+  },
+  "tags": []
+}

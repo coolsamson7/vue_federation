@@ -1,0 +1,10 @@
+{
+  "name": "user-module",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "nx build user-module",
+
+    "scan:metadata": "tsx ../../libs/tools/metadata/src/build-metadata.ts ./ dist/metadata.json"
+  }
+}

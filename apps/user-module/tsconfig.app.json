@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc/apps/user-module",
+    "rootDir": "../../",
+    "types": ["vite/client"],
+    "allowJs": true,
+    "composite": false,
+    "baseUrl": "../../"
+
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.vue"
+  ],
+  "exclude": ["**/*.spec.ts"]
+}
