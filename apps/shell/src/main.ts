@@ -25,8 +25,22 @@ class Bar {
   constructor(public foo: Foo) {}
 }
 
-const bar = container.resolve(Bar);
-console.log(bar.foo);
+console.log(Reflect.getMetadataKeys(Bar));
+
+// quick metadata check instead of throwing on resolve
+console.log(
+  "design:paramtypes for Bar =>",
+  Reflect.getMetadata("design:paramtypes", Bar)
+);
+try {
+  const bar = container.resolve(Bar);
+  console.log("resolved Bar.foo =>", bar.foo);
+} catch (err) {
+  console.error(
+    "container.resolve(Bar) failed (expected if metadata missing):",
+    err
+  );
+}
 
 // ETST
 // local routes
