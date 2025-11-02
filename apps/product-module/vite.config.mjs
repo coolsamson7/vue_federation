@@ -60,6 +60,10 @@ export default defineConfig({
     ],
   },
 
+   define: {
+        'process.env': {}, // ✅ prevent 'process is not defined' in remoteEntry
+      },
+
   build: isLibBuild
       ? {
           target: "esnext",

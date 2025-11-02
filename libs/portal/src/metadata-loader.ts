@@ -10,7 +10,7 @@ export class ModuleLoader {
 
     // internal
 
-    async loadRemoteEntry(remoteEntry: string) : Promise<ModuleMetadata> {
+    async loadJSON(remoteEntry: string) : Promise<ModuleMetadata> {
         try {
           const response = await fetch(remoteEntry);
 
@@ -34,7 +34,7 @@ export class ModuleLoader {
         for (const remote of remotes) {
             // load
 
-            const moduleMetadata = await this.loadRemoteEntry(remote.url + "/metadata.json");
+            const moduleMetadata = await this.loadJSON(remote.url + "/metadata.json");
 
             moduleMetadata.remote = remote;
 
@@ -43,7 +43,15 @@ export class ModuleLoader {
             for (const feature of moduleMetadata.features || []) {
                 // remember module information, so that the loader can directly retrieve it from the feature
 
-                feature.module = moduleMetadata;
+                // avoid circular references when we try to stream JSON
+
+                Object.defineProperty(feature, "module", {
+                      value: moduleMetadata,
+                      enumerable: false,   // 👈 JSON.stringify() ignores it
+                      writable: true,
+                    });
+
+                //feature.module = moduleMetadata;
 
                 // register
 
@@ -51,61 +59,4 @@ export class ModuleLoader {
             }
         }
     }
-}
-
-// obsolete TODO
-@singleton()
-export class MetadataLoaderService {
-  // instance data
-
-  private features: Map<string, FeatureMetadata> = new Map();
-
-  // constructor
-
-  constructor(private featureRegistry: FeatureRegistry) {};
-
-  // public
-
-  async loadFromJSON(json: string): Promise<void> {
-    const data = JSON.parse(json);
-
-    if (data.features) {
-      data.features.forEach((feature: FeatureMetadata) => {
-        this.features.set(feature.id, feature);
-        this.featureRegistry.register(feature);
-      });
-    }
-  }
-
-  async loadFromAPI(endpoint: string): Promise<void> {
-    try {
-      const response = await fetch(endpoint);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const json = await response.text();
-      await this.loadFromJSON(json);
-    } catch (error) {
-      console.error("Failed to load metadata from API:", error);
-      throw error;
-    }
-  }
-
-  async loadRemoteConfigs(endpoint: string): Promise<void> {
-    const response = await fetch(endpoint);
-    const configs: Array<{ moduleId: string; remote: RemoteConfig }> = await response.json();
-
-    configs.forEach(({ moduleId, remote }) => {
-      const feature = this.features.get(moduleId);
-      if (feature) {
-        // remember remote config
-
-        //TODO feature.remote = remote;
-
-        // and register
-
-        this.featureRegistry.register(feature);
-      }
-    });
-  }
 }

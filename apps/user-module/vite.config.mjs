@@ -85,6 +85,10 @@ export default defineConfig({
         outDir: path.resolve(__dirname, "../../dist/apps/user-module"),
       },
 
+  define: {
+      'process.env': {}, // ✅ prevent 'process is not defined' in remoteEntry
+    },
+
   server: !isLibBuild
     ? {
         port: 5003,
