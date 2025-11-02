@@ -7,7 +7,7 @@
     "scan": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "nx run metadata:scan --args='--moduleFolder=apps/user-module --outFile=dist/apps/user-module/metadata.json'"
+        "command": "nx run metadata:scan --args='--moduleFolder=apps/user-module --outFile=dist/apps/user-module/assets/metadata.json'"
       }
     },
     "build": {
@@ -15,8 +15,7 @@
       "outputs": ["{options.outputPath}"],
       "dependsOn": ["scan"],
       "options": {
-        "viteConfig": "apps/user-module/vite.config.mjs",
-        "tsConfig": "apps/user-module/tsconfig.app.json",
+        "viteConfig": "apps/user-module/vite.config.ts",
         "outputPath": "dist/apps/user-module",
         "emptyOutDir": true
       },
@@ -28,13 +27,21 @@
         }
       }
     },
+
+    "preview": {
+      "executor": "@nx/vite:preview-server",
+      "options": {
+        "buildTarget": "user-module:build:lib",
+        "port": 5003
+      }
+    },
+
     "serve": {
       "executor": "@nx/vite:dev-server",
       "options": {
-        "buildTarget": "user-module:build",
+        "buildTarget": "user-module:build:lib",
         "port": 5003
-      },
-      "dependsOn": ["build"]
+      }
     }
   },
   "tags": []

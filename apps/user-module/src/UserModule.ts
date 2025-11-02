@@ -12,14 +12,14 @@ import { FeatureModule } from "portal/feature-decorator";
       path: "/users",
       label: "UserList",
       // use the remote: prefix so the shell knows to load this from the MF remote
-      component: "remote:userModule/UserList",
+      component: "UserList",
       meta: { requiresAuth: true, requiresAdmin: true },
     },
     {
       id: "user-profile",
       path: "/profile",
       label: "UserProfile",
-      component: "remote:userModule/UserProfile",
+      component: "UserProfile",
       meta: { requiresAuth: true },
     },
   ],

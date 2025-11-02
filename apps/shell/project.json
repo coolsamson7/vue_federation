@@ -7,7 +7,7 @@
     "scan": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "nx run metadata:scan --args='--moduleFolder=apps/shell --outFile=dist/apps/shell/metadata.json'"
+        "command": "nx run metadata:scan --args='--moduleFolder=apps/shell --outFile=dist/apps/shell/assets/metadata.json'"
       }
     },
     "build": {

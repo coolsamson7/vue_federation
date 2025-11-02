@@ -1,39 +1,38 @@
 {
-  "projectName": "product-module",
-  "projectPath": "/Users/andreasernst/Documents/projects/vue_federation/product-module",
+  "id": "product-module",
+  "label": "Product Management",
+  "version": "1.0.0",
   "features": [
     {
-      "id": "product-module",
-      "name": "Product Management",
-      "version": "1.0.0",
+      "id": "product-detail",
+      "path": "/products/:id",
+      "label": "ProductDetail",
+      "component": "ProductDetail",
+      "meta": {
+        "requiresAuth": true
+      },
+      "sourceFile": "apps/product-module/src/components/ProductDetail.vue"
+    },
+    {
+      "id": "product-list",
+      "label": "",
+      "path": "/products",
+      "component": "ProductList",
+      "sourceFile": "apps/product-module/src/components/ProductList.vue",
       "icon": "📦",
-      "description": "Product catalog and management system",
-      "routes": [
-        {
-          "path": "/products",
-          "name": "ProductList",
-          "component": "remote:productModule/ProductList",
-          "meta": {
-            "requiresAuth": true
-          }
-        },
-        {
-          "path": "/products/:id",
-          "name": "ProductDetail",
-          "component": "remote:productModule/ProductDetail",
-          "meta": {
-            "requiresAuth": true
-          }
-        }
-      ],
-      "permissions": [
-        "product:read",
-        "product:write",
-        "product:delete"
-      ],
-      "dependencies": []
+      "description": "Product list",
+      "meta": {
+        "requiresAuth": true
+      }
     }
   ],
-  "timestamp": "2025-10-28T07:22:49.748Z",
-  "version": "1.0.0"
+  "moduleName": "ProductModule.ts",
+  "sourceFile": "apps/product-module/src/ProductModule.ts",
+  "icon": "📦",
+  "description": "Product catalog and management system",
+  "permissions": [
+    "product:read",
+    "product:write",
+    "product:delete"
+  ]
 }

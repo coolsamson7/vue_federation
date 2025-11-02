@@ -1,157 +1,183 @@
 import { singleton } from "tsyringe";
 
-import { createRouter, createWebHistory, Router, RouteRecordRaw } from "vue-router";
+import {
+  createRouter,
+  createWebHistory,
+  Router,
+  RouteRecordRaw,
+} from "vue-router";
 
 import { FeatureRegistry, RemoteConfig } from "./feature-registry";
 
- declare global {
-   interface Window {
-     __federation_shared__?: Record<string, unknown>;
-   }
- }
+declare global {
+  interface Window {
+    __federation_shared__?: Record<string, unknown>;
+  }
+}
 
 @singleton()
 export class FeatureLoader {
-     // instance data
+  // instance data
 
-     containers: Record<string, any> = {};
+  containers: Record<string, any> = {};
 
-     // constructor
+  // constructor
 
-     constructor(private featureRegistry : FeatureRegistry) {}
+  constructor(private featureRegistry: FeatureRegistry) {}
 
-     // loader stuff
+  // loader stuff
 
-      async loadRemoteContainer(config: RemoteConfig): Promise<any> {
-        const { url, scope } = config;
+  async loadRemoteContainer(config: RemoteConfig): Promise<any> {
+    const { url, scope } = config;
 
-        // Return cached container if already loaded
+    // Return cached container if already loaded
 
-        if (this.containers[scope]) 
-          return this.containers[scope];
+    if (this.containers[scope]) return this.containers[scope];
 
+    try {
+      // Load remoteEntry. Try the common locations that Vite/OriginJS plugin uses in dev and build:
+      // 1) /remoteEntry.js
+      // 2) /assets/remoteEntry.js
+      // Try both so the loader works with different dev/build setups.
+      let container: any;
+      const candidates = [
+        url + "/remoteEntry.js",
+        url + "/assets/remoteEntry.js",
+      ];
+      let lastErr: any = null;
+      for (const candidate of candidates) {
         try {
-          // Load remoteEntry
           // @ts-ignore
-          const container = await import(/* @vite-ignore */ url);
-
-          // Initialize the container with shared modules
-          await container.init?.(window.__federation_shared__ || {});
-
-          this.containers[scope] = container;
-
-          return container;
-        } catch (err) {
-          console.error(
-            `Failed to load remote container ${scope} from ${url}:`,
-            err
-          );
-          throw err;
+          container = await import(/* @vite-ignore */ candidate);
+          if (container) break;
+        } catch (e) {
+          lastErr = e;
         }
       }
-
-      async loadRemoteComponent(module: RemoteConfig, component: string): Promise<any> {
-        //const [moduleId, component] = componentName.split("/");
-
-        //const feature = this.featureRegistry.get(moduleId);
-
-
-        const container = await this.loadRemoteContainer(module);
-        const factory = await container.get(`./${component}`);
-
-        return factory(); // Vue component ready to render
+      if (!container) {
+        throw lastErr || new Error(`Failed to import remoteEntry from ${url}`);
       }
 
-     // public
+      // Initialize the container with shared modules
+      await container.init?.(window.__federation_shared__ || {});
 
-     setupRouter(routes: RouteRecordRaw[]): Router {
-         // ad dynamic routes
+      this.containers[scope] = container;
 
-        routes.push(...this.generateRoutes());
+      return container;
+    } catch (err) {
+      console.error(
+        `Failed to load remote container ${scope} from ${url}:`,
+        err
+      );
+      throw err;
+    }
+  }
 
-         // done
+  async loadRemoteComponent(
+    module: RemoteConfig,
+    component: string
+  ): Promise<any> {
+    //const [moduleId, component] = componentName.split("/");
 
-         return createRouter({
-              history: createWebHistory(),
-              routes,
-          });
-     }
+    //const feature = this.featureRegistry.get(moduleId);
 
-   generateRoutes(): any[] {
-         const features = this.featureRegistry.getAll();
-         const routes: any[] = [];
+    const container = await this.loadRemoteContainer(module);
+    const factory = await container.get(`./${component}`);
 
-         // TODO: this sucks
-         // build a map of available local components to avoid unsupported variable dynamic imports
+    return factory(); // Vue component ready to render
+  }
 
-         const localComponentMap: Record<string, () => Promise<any>> = (
-           import.meta as any
-         ).glob("../../components/**/*.vue");
+  // public
 
-         features.forEach((feature) => {
-           // local function
+  setupRouter(routes: RouteRecordRaw[]): Router {
+    // ad dynamic routes
 
-           const componentLoader = async () => {
-             console.log("load component for route:", feature.path);
+    routes.push(...this.generateRoutes());
 
-             //if (!feature.module) {
-             //  throw new Error(`No component specified for route ${feature.path}`);
-             //}
+    // done
 
-             if (typeof feature.component === "string") {
-               // Handle remote components
+    return createRouter({
+      history: createWebHistory(),
+      routes,
+    });
+  }
 
-               if (feature.module != null) {
-                 //const remotePath = route.component.replace(/^remote:/, "");
-                 return this.loadRemoteComponent(feature.module.remote!, feature.component).catch(
-                   (err: any) => {
-                     console.error(
-                       `Failed to load remote component ${feature.module?.remote?.url}:`,
-                       err
-                     );
-                     return { template: "<div>Failed to load component</div>" };
-                   }
-                 );
-               }
+  generateRoutes(): any[] {
+    const features = this.featureRegistry.getAll();
+    const routes: any[] = [];
 
-               // handle local components
+    // TODO: this sucks
+    // build a map of available local components to avoid unsupported variable dynamic imports
 
-               const localComponent = localComponentMap[feature.component];
-               if (localComponent) {
-                 return localComponent();
-               }
-             }
+    const localComponentMap: Record<string, () => Promise<any>> = (
+      import.meta as any
+    ).glob("../../components/**/*.vue");
 
-             throw new Error(
-               `Invalid component configuration for route ${feature.path}`
-             );
-           };
+    features.forEach((feature) => {
+      // local function
 
-           routes.push({
-             path: feature.path,
-             name: feature.id,
-             component: componentLoader,
-             meta: {
-               ...feature.meta,
-               featureId: feature.id,
-               permissions: feature.permissions,
-             },
-           });
-         });
+      const componentLoader = async () => {
+        console.log("load component for route:", feature.path);
 
-         return routes;
+        //if (!feature.module) {
+        //  throw new Error(`No component specified for route ${feature.path}`);
+        //}
+
+        if (typeof feature.component === "string") {
+          // Handle remote components
+
+          if (feature.module != null) {
+            //const remotePath = route.component.replace(/^remote:/, "");
+            return this.loadRemoteComponent(
+              feature.module.remote!,
+              feature.component
+            ).catch((err: any) => {
+              console.error(
+                `Failed to load remote component ${feature.module?.remote?.url}:`,
+                err
+              );
+              return { template: "<div>Failed to load component</div>" };
+            });
+          }
+
+          // handle local components
+
+          const localComponent = localComponentMap[feature.component];
+          if (localComponent) {
+            return localComponent();
+          }
         }
-      
-      generateRoutesOLD(): any[] {
-        const features = this.featureRegistry.getAll();
-        const routes: any[] = [];
-        // TODO: this sucks
-        // build a map of available local components to avoid unsupported variable dynamic imports
-        const localComponentMap: Record<string, () => Promise<any>> = (
-          import.meta as any
-        ).glob("../../components/**/*.vue");
 
-        /*features.forEach((feature) => {
+        throw new Error(
+          `Invalid component configuration for route ${feature.path}`
+        );
+      };
+
+      routes.push({
+        path: feature.path,
+        name: feature.id,
+        component: componentLoader,
+        meta: {
+          ...feature.meta,
+          featureId: feature.id,
+          permissions: feature.permissions,
+        },
+      });
+    });
+
+    return routes;
+  }
+
+  generateRoutesOLD(): any[] {
+    const features = this.featureRegistry.getAll();
+    const routes: any[] = [];
+    // TODO: this sucks
+    // build a map of available local components to avoid unsupported variable dynamic imports
+    const localComponentMap: Record<string, () => Promise<any>> = (
+      import.meta as any
+    ).glob("../../components/**/*.vue");
+
+    /*features.forEach((feature) => {
           if (feature.routes) {
             feature.routes.forEach((route) => {
               const componentLoader = async () => {
@@ -202,7 +228,6 @@ export class FeatureLoader {
           }
         });*/
 
-        return routes;
-      }
-
+    return routes;
+  }
 }

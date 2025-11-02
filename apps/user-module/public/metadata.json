@@ -1,7 +1,38 @@
 {
-  "projectName": "user-module",
-  "projectPath": "/Users/andreasernst/Documents/projects/vue_federation/user-module",
-  "features": [],
-  "timestamp": "2025-10-28T07:24:24.930Z",
-  "version": "1.0.0"
+  "id": "user-module",
+  "label": "User Management",
+  "version": "1.0.0",
+  "features": [
+    {
+      "id": "user-list",
+      "path": "/users",
+      "label": "UserList",
+      "component": "UserList",
+      "meta": {
+        "requiresAuth": true,
+        "requiresAdmin": true
+      },
+      "sourceFile": "apps/user-module/src/UserModule.ts"
+    },
+    {
+      "id": "user-profile",
+      "path": "/profile",
+      "label": "UserProfile",
+      "component": "UserProfile",
+      "meta": {
+        "requiresAuth": true
+      },
+      "sourceFile": "apps/user-module/src/UserModule.ts"
+    }
+  ],
+  "moduleName": "UserModule.ts",
+  "sourceFile": "apps/user-module/src/UserModule.ts",
+  "icon": "👤",
+  "description": "User profiles and authentication system",
+  "permissions": [
+    "user:read",
+    "user:write",
+    "user:delete",
+    "user:admin"
+  ]
 }

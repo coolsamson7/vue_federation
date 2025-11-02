@@ -7,7 +7,7 @@
     "scan": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "nx run metadata:scan --args='--moduleFolder=apps/product-module --outFile=dist/apps/product-module/metadata.json'"
+        "command": "nx run metadata:scan --args='--moduleFolder=apps/product-module --outFile=dist/apps/product-module/assets/metadata.json'"
       }
     },
     "build": {
@@ -27,13 +27,21 @@
         }
       }
     },
+
+    "preview": {
+      "executor": "@nx/vite:preview-server",
+      "options": {
+        "buildTarget": "product-module:build:lib",
+        "port": 5002
+      }
+    },
+
     "serve": {
       "executor": "@nx/vite:dev-server",
       "options": {
-        "buildTarget": "product-module:build",
-        "port": 5002
-      },
-      "dependsOn": ["build"]
+        "buildTarget": "product-module:build:lib",
+        "port": 5003
+      }
     }
   },
   "tags": []

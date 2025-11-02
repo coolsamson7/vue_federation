@@ -34,14 +34,14 @@ export class ModuleLoader {
         for (const remote of remotes) {
             // load
 
-            const moduleMetadata = await this.loadRemoteEntry(remote.url);
+            const moduleMetadata = await this.loadRemoteEntry(remote.url + "/metadata.json");
 
             moduleMetadata.remote = remote;
 
             // and fill feature registry
 
             for (const feature of moduleMetadata.features || []) {
-                // remember moudle information, so that the loader can dierctly retrievn it fro nthe feature
+                // remember module information, so that the loader can directly retrieve it from the feature
 
                 feature.module = moduleMetadata;
 

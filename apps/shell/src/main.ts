@@ -79,16 +79,17 @@ class ShellApplication {
     // load remote config
     //await this.metadataLoader.loadRemoteConfigs("/remote-config.json");
 
+    // NOTE: product-module runs on 5002, user-module on 5003 (see their vite.config)
     await this.moduleLoader.load([
       {
-        url: "http://localhost:5002/assets/remoteEntry.js",
-        scope: "user",
-        module: "./UserModule",
-      },
-      {
-        url: "http://localhost:5003/assets/remoteEntry.js",
+        url: "http://localhost:5002",
         scope: "product",
         module: "./ProductModule",
+      },
+      {
+        url: "http://localhost:5003",
+        scope: "user",
+        module: "./UserModule",
       },
     ]);
 
